@@ -1,0 +1,9 @@
+.rpt2_cache
+node_modules/*
+
+# for view test
+viewTest
+rollup.viewTest.config.js
+
+yarn.lock
+yarn-error.log

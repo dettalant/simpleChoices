@@ -1,0 +1,71 @@
+[config]
+skip_core_tasks = true
+
+[tasks.clean]
+script = [
+"""
+dist="./dist"
+[ -d $dist ] \
+  && find $dist -maxdepth 1 ! -path $dist | xargs -r rm -r \
+  || :
+
+pub="./viewTest"
+[ -d $pub ] \
+  && find $pub -maxdepth 1 ! -path $pub ! -path $pub/base.html ! -path $pub/viewTest.ts ! -path $pub/viewTest.css | xargs -r rm -r \
+  || :
+"""
+]
+
+[tasks.copy]
+script = [
+"""
+pub="./viewTest"
+
+cat $pub/base.html \
+  | sed -e 's/{{$date}}/'$(date +%s)'/g' \
+  > $pub/index.html
+"""
+]
+
+[tasks.rollup]
+command = "yarn"
+args = ["run", "rollup", "-c"]
+
+[tasks.rollup_prod]
+env = {"NODE_ENV" = "production"}
+command = "yarn"
+args = ["run", "rollup", "-c"]
+
+[tasks.test]
+command = "yarn"
+args = ["run", "jest"]
+
+[tasks.build_dev]
+dependencies = [
+  "rollup",
+]
+
+[tasks.build_prod]
+dependencies = [
+  "rollup_prod"
+]
+
+[tasks.build]
+dependencies = [
+  "clean",
+  "build_dev",
+  "build_prod"
+]
+
+[tasks.build_viewTest]
+command = "yarn"
+args = ["run", "rollup", "-c", "rollup.viewTest.config.js"]
+
+[tasks.serve]
+command = "yarn"
+args = ["run", "http-server", "./viewTest", "-p", "8931"]
+dependencies = [
+  "build_dev",
+  "build_viewTest",
+  "copy"
+]
