@@ -45,9 +45,9 @@ class SimpleSelectBuilder {
             current: "simpleSelect_currentItem",
         };
     }
-    create(idStr, label, items, className) {
+    create(label, items, className) {
         const el = this.genSelectElements(label, items, className);
-        return new SimpleSelect(idStr, el, items);
+        return new SimpleSelect(el, items);
     }
     genSelectElements(label, items, className = "") {
         const names = this.classNames;
@@ -95,13 +95,12 @@ class SimpleSelect {
     /**
      * SimpleSelectのコンストラクタ
      *
-     * @param selectId dispatchEventにおける識別名
      * @param el    生成されたselect要素内のHTMLElementまとめ
      * @param items 生成されたselect要素が内包する要素データ
      */
-    constructor(selectId, el, items) {
+    constructor(el, items) {
         this._currentIdx = 0;
-        this.selectId = selectId;
+        this.isActive = false;
         this.el = el;
         this.items = items;
         this.applyEventListeners();
@@ -128,44 +127,61 @@ class SimpleSelect {
         if (item)
             this.el.current.textContent = item.label;
     }
-    applyEventListeners() {
-        const { container, itemWrapper, items } = this.el;
-        container.addEventListener("focus", () => {
-            [container, itemWrapper].forEach(el => setAriaExpanded(el, true));
-        });
-        container.addEventListener("blur", () => {
+    showDropdown() {
+        const { container, itemWrapper } = this.el;
+        [container, itemWrapper].forEach(el => setAriaExpanded(el, true));
+        this.isActive = true;
+    }
+    hideDropdown() {
+        // onKeyDown時にうまく動かなかったので
+        // requestAnimationFrameを挟んで実行タイミングをずらす
+        requestAnimationFrame(() => {
+            const { container, itemWrapper } = this.el;
             [container, itemWrapper].forEach(el => setAriaExpanded(el, false));
+            this.isActive = false;
         });
-        container.addEventListener("keydown", e => {
-            // イベントのバブリングを停止させる
-            e.stopPropagation();
-            const isArrowDown = e.key === "ArrowDown" || e.keyCode === 40;
-            const isArrowUp = e.key === "ArrowUp" || e.keyCode === 38;
-            const isEnter = e.key === "Enter" || e.keyCode === 13;
-            if (isArrowUp) {
-                const idx = (this._currentIdx > 0)
-                    ? --this._currentIdx
-                    : 0;
-                this.updateHighlightItem(idx);
-            }
-            else if (isArrowDown) {
-                const idx = (this._currentIdx < this.items.length - 1)
-                    ? ++this._currentIdx
-                    : this._currentIdx;
-                this.updateHighlightItem(idx);
-            }
-            else if (isEnter) {
-                const idx = this._currentIdx;
-                this.updateCurrentItem(idx);
-                this.dispatchSelectItemEvent(idx);
-                container.blur();
-            }
+    }
+    onKeyDownHandler(e) {
+        // イベントのバブリングを停止させる
+        e.stopPropagation();
+        if (!this.isActive) {
+            // 非アクティブ状態の際は特殊モード
+            this.showDropdown();
+            return;
+        }
+        const isArrowDown = e.key === "ArrowDown" || e.keyCode === 40;
+        const isArrowUp = e.key === "ArrowUp" || e.keyCode === 38;
+        const isEnter = e.key === "Enter" || e.keyCode === 13;
+        if (isArrowUp) {
+            const idx = (this._currentIdx > 0)
+                ? --this._currentIdx
+                : 0;
+            this.updateHighlightItem(idx);
+        }
+        else if (isArrowDown) {
+            const idx = (this._currentIdx < this.items.length - 1)
+                ? ++this._currentIdx
+                : this._currentIdx;
+            this.updateHighlightItem(idx);
+        }
+        else if (isEnter) {
+            const idx = this._currentIdx;
+            this.updateCurrentItem(idx);
+            this.dispatchSelectItemEvent(idx);
+            this.hideDropdown();
+        }
+    }
+    applyEventListeners() {
+        const { container, items } = this.el;
+        container.addEventListener("blur", () => {
+            this.hideDropdown();
         });
-        // container.addEventListener("click", e => {
-        //   toggleAriaExpand(container);
-        //   e.stopPropagation();
-        // })
-        // TODO: キーボード操作も追加する
+        container.addEventListener("click", () => {
+            (!this.isActive)
+                ? this.showDropdown()
+                : this.hideDropdown();
+        });
+        container.addEventListener("keydown", e => this.onKeyDownHandler(e));
         items.forEach(el => {
             el.addEventListener("mouseenter", () => {
                 const idx = parseInt(el.dataset.itemIdx || "", 10);
@@ -175,8 +191,6 @@ class SimpleSelect {
                 const idx = parseInt(el.dataset.itemIdx || "", 10);
                 this.updateCurrentItem(idx);
                 this.dispatchSelectItemEvent(idx);
-                // 選択時には親要素のフォーカスを失わせる
-                container.blur();
             });
         });
     }
