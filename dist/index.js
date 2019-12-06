@@ -50,11 +50,11 @@ class SimpleSelectBuilder {
         const el = this.genSelectElements(label, items, className);
         const select = new SimpleSelect(el, items);
         // set initial selected
-        const selectedIdx = items.findIndex(item => item.selected);
-        if (selectedIdx > 0) {
-            // selectedIdxが1以上ならば初期設定値を変更しておく
-            select.updateCurrentItem(selectedIdx, false);
-        }
+        let selectedIdx = items.findIndex(item => item.selected);
+        if (selectedIdx === -1)
+            selectedIdx = 0;
+        // 初期化のためにアップデート関数を呼んでおく
+        select.updateCurrentItem(selectedIdx, false);
         return select;
     }
     genSelectElements(label, items, className = "") {
@@ -64,7 +64,6 @@ class SimpleSelectBuilder {
         labelEl.textContent = label;
         const wrapperEl = createDiv(names.wrapper);
         const currentEl = createDiv(names.current);
-        currentEl.textContent = items[0].label;
         const itemWrapperEl = createDiv(names.itemWrapper);
         // set aria expanded;
         [btnEl, itemWrapperEl].forEach(el => setAriaExpanded(el, false));
@@ -73,8 +72,6 @@ class SimpleSelectBuilder {
             const el = createDiv(className);
             el.textContent = item.label;
             el.dataset.itemIdx = i.toString();
-            // 0番だけtrue、それ以外はfalseを指定
-            setAriaSelected(el, i === 0);
             itemWrapperEl.appendChild(el);
             return el;
         });
@@ -117,19 +114,37 @@ class SimpleSelect {
     get currentIdx() {
         return this._currentIdx;
     }
+    /**
+     * currentIdx指定を行うsetter
+     * 内部変数の書き換えと同時にupdateCurrentItem関数も呼ぶ
+     * @param  idx 更新後のインデックス数値
+     */
     set currentIdx(idx) {
+        // 保有items配列を越える数値の場合は早期リターン
+        if (idx > this.items.length - 1)
+            return;
         this._currentIdx = idx;
         this.updateCurrentItem(idx);
     }
     get currentItem() {
         return this.items[this._currentIdx];
     }
+    /**
+     * 入力インデックス数値の値が選択されたものとして
+     * currentItemなどの値を更新する
+     * @param  itemIdx         更新先となるインデックス数値
+     * @param  isDispatchEvent falseならばdispatchEventしない
+     */
     updateCurrentItem(itemIdx, isDispatchEvent = true) {
         this.updateCurrentItemLabel(itemIdx);
         this.updateHighlightItem(itemIdx);
         if (isDispatchEvent)
             this.dispatchSelectItemEvent();
     }
+    /**
+     * 選択中要素のハイライトを切り替える
+     * @param  itemIdx 更新先となるインデックス数値
+     */
     updateHighlightItem(itemIdx) {
         // 配列数を越えているidxの場合は早期リターン
         if (itemIdx >= this.el.items.length)
@@ -141,11 +156,18 @@ class SimpleSelect {
         setAriaSelected(item, true);
         this._currentIdx = itemIdx;
     }
+    /**
+     * 選択中要素ラベル値を書き換える
+     * @param  itemIdx 更新先となるインデックス数値
+     */
     updateCurrentItemLabel(itemIdx) {
         const item = this.items[itemIdx];
         if (item)
             this.el.current.textContent = item.label;
     }
+    /**
+     * ドロップダウンを開く
+     */
     showDropdown() {
         const { container, itemWrapper } = this.el;
         [container, itemWrapper].forEach(el => setAriaExpanded(el, true));
@@ -167,6 +189,10 @@ class SimpleSelect {
             res();
         }));
     }
+    /**
+     * container elementのカスタムイベントを発火させる
+     * "SimpleSelectItemEvent"がカスタムイベント名
+     */
     dispatchSelectItemEvent() {
         const ev = new CustomEvent("SimpleSelectItemEvent", {
             detail: this.items[this._currentIdx],
