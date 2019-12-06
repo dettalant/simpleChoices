@@ -1,10 +1,5 @@
 import typescript from "rollup-plugin-typescript2";
-// import resolve from "rollup-plugin-node-resolve";
-// import commonjs from "rollup-plugin-commonjs";
-import { terser } from "rollup-plugin-terser";
 import pkg from "./package.json";
-
-const isProduction = process.env.NODE_ENV === "production";
 
 const bannerComment = `/*!
  *   ${pkg.name}.js
@@ -15,8 +10,6 @@ const bannerComment = `/*!
  */`;
 
 const plugins = [
-//   resolve(),
-//   commonjs(),
   typescript({
     tsconfig: "tsconfig-build.json",
     useTsconfigDeclarationDir: true
@@ -24,18 +17,6 @@ const plugins = [
 ];
 
 const buildName = ["index", ".js"];
-
-if (isProduction) {
-  // for production build
-  const terserOptions = {
-    output: {
-      comments: "some"
-    }
-  }
-
-  plugins.push(terser(terserOptions));
-  buildName.splice(1, 0, ".min");
-}
 
 const dirName = "./dist/";
 const cjsOutput = {
@@ -47,16 +28,10 @@ const cjsOutput = {
   sourceMap: "inline",
 }
 
-// buildName.splice(1, 0, ".iife");
-// const iifeOutput = Object.assign({}, cjsOutput);
-// iifeOutput.format = "iife";
-// iifeOutput.entryFileNames = buildName.join("");
-
 export default {
   input: "./src/index.ts",
   output: [
     cjsOutput,
-//     iifeOutput,
   ],
   plugins
 };

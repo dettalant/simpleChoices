@@ -31,11 +31,6 @@ cat $pub/base.html \
 command = "yarn"
 args = ["run", "rollup", "-c"]
 
-[tasks.rollup_prod]
-env = {"NODE_ENV" = "production"}
-command = "yarn"
-args = ["run", "rollup", "-c"]
-
 [tasks.test]
 command = "yarn"
 args = ["run", "jest"]
@@ -45,16 +40,10 @@ dependencies = [
   "rollup",
 ]
 
-[tasks.build_prod]
-dependencies = [
-  "rollup_prod"
-]
-
 [tasks.build]
 dependencies = [
   "clean",
-  "build_dev",
-  "build_prod"
+  "build_dev"
 ]
 
 [tasks.build_viewTest]
