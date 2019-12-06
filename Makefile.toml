@@ -58,3 +58,10 @@ dependencies = [
   "build_viewTest",
   "copy"
 ]
+
+[tasks.deploy]
+command = "yarn"
+args = ["publish"]
+dependencies = [
+  "build"
+]

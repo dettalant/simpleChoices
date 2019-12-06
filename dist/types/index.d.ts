@@ -1,3 +1,3 @@
 import SimpleSelectBuilder from "#/select";
-export * from "#/interfaces";
-export { SimpleSelectBuilder };
+import { SelectClassNames, SelectItem, SelectElements } from "#/interfaces";
+export { SimpleSelectBuilder, SelectClassNames, SelectItem, SelectElements };

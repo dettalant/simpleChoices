@@ -1,4 +1,4 @@
-import SimpleSelectBuilder from "../src/select";
+import { SimpleSelectBuilder } from "../src/index";
 
 const appRoot = document.getElementById("appRoot");
 if (!appRoot) throw new Error("appRoot is not found");
