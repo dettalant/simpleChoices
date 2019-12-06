@@ -21,4 +21,4 @@ export const setAriaSelected = (el: HTMLElement, bool: boolean) => el.setAttribu
 
 export const setAriaExpanded = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-expanded", bool.toString());
 
-export const setAriaHidden = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-hidden", bool.toString());
+// export const setAriaHidden = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-hidden", bool.toString());

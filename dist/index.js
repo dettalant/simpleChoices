@@ -30,6 +30,7 @@ const createButton = (className) => {
 };
 const setAriaSelected = (el, bool) => el.setAttribute("aria-selected", bool.toString());
 const setAriaExpanded = (el, bool) => el.setAttribute("aria-expanded", bool.toString());
+// export const setAriaHidden = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-hidden", bool.toString());
 
 class SimpleSelectBuilder {
     constructor(classNames = {}) {
@@ -47,7 +48,14 @@ class SimpleSelectBuilder {
     }
     create(label, items, className) {
         const el = this.genSelectElements(label, items, className);
-        return new SimpleSelect(el, items);
+        const select = new SimpleSelect(el, items);
+        // set initial selected
+        const selectedIdx = items.findIndex(item => item.selected);
+        if (selectedIdx > 0) {
+            // selectedIdxが1以上ならば初期設定値を変更しておく
+            select.updateCurrentItem(selectedIdx, false);
+        }
+        return select;
     }
     genSelectElements(label, items, className = "") {
         const names = this.classNames;
@@ -55,22 +63,20 @@ class SimpleSelectBuilder {
         const labelEl = createSpan(names.label);
         labelEl.textContent = label;
         const wrapperEl = createDiv(names.wrapper);
-        const currentEl = createSpan(names.current);
+        const currentEl = createDiv(names.current);
         currentEl.textContent = items[0].label;
         const itemWrapperEl = createDiv(names.itemWrapper);
         // set aria expanded;
         [btnEl, itemWrapperEl].forEach(el => setAriaExpanded(el, false));
         const itemEls = items.map((item, i) => {
-            const divClassName = names.item + " " + names.item + i;
-            const div = createDiv(divClassName);
-            div.textContent = item.label;
-            div.dataset.itemIdx = i.toString();
-            // set aria selected
-            (i === 0)
-                ? setAriaSelected(div, true)
-                : setAriaSelected(div, false);
-            itemWrapperEl.appendChild(div);
-            return div;
+            const className = names.item + " " + names.item + i;
+            const el = createDiv(className);
+            el.textContent = item.label;
+            el.dataset.itemIdx = i.toString();
+            // 0番だけtrue、それ以外はfalseを指定
+            setAriaSelected(el, i === 0);
+            itemWrapperEl.appendChild(el);
+            return el;
         });
         // append childs
         [
@@ -100,16 +106,29 @@ class SimpleSelect {
      */
     constructor(el, items) {
         this._currentIdx = 0;
-        this.isActive = false;
+        this._isActive = false;
         this.el = el;
         this.items = items;
         this.applyEventListeners();
     }
-    dispatchSelectItemEvent(itemIdx) {
-        const ev = new CustomEvent("SimpleSelectItemEvent", {
-            detail: this.items[itemIdx].value,
-        });
-        this.el.container.dispatchEvent(ev);
+    get isActive() {
+        return this._isActive;
+    }
+    get currentIdx() {
+        return this._currentIdx;
+    }
+    set currentIdx(idx) {
+        this._currentIdx = idx;
+        this.updateCurrentItem(idx);
+    }
+    get currentItem() {
+        return this.items[this._currentIdx];
+    }
+    updateCurrentItem(itemIdx, isDispatchEvent = true) {
+        this.updateCurrentItemLabel(itemIdx);
+        this.updateHighlightItem(itemIdx);
+        if (isDispatchEvent)
+            this.dispatchSelectItemEvent();
     }
     updateHighlightItem(itemIdx) {
         // 配列数を越えているidxの場合は早期リターン
@@ -122,7 +141,7 @@ class SimpleSelect {
         setAriaSelected(item, true);
         this._currentIdx = itemIdx;
     }
-    updateCurrentItem(itemIdx) {
+    updateCurrentItemLabel(itemIdx) {
         const item = this.items[itemIdx];
         if (item)
             this.el.current.textContent = item.label;
@@ -130,16 +149,29 @@ class SimpleSelect {
     showDropdown() {
         const { container, itemWrapper } = this.el;
         [container, itemWrapper].forEach(el => setAriaExpanded(el, true));
-        this.isActive = true;
+        this._isActive = true;
     }
+    /**
+     * ドロップダウンを閉じる
+     * hideDropdown後に行う処理を簡便にするため、promiseで包んで返す
+     *
+     * @return 非同期処理終了後のPromiseオブジェクト
+     */
     hideDropdown() {
         // onKeyDown時にうまく動かなかったので
         // requestAnimationFrameを挟んで実行タイミングをずらす
-        requestAnimationFrame(() => {
+        return new Promise(res => requestAnimationFrame(() => {
             const { container, itemWrapper } = this.el;
             [container, itemWrapper].forEach(el => setAriaExpanded(el, false));
-            this.isActive = false;
+            this._isActive = false;
+            res();
+        }));
+    }
+    dispatchSelectItemEvent() {
+        const ev = new CustomEvent("SimpleSelectItemEvent", {
+            detail: this.items[this._currentIdx],
         });
+        this.el.container.dispatchEvent(ev);
     }
     onKeyDownHandler(e) {
         // イベントのバブリングを停止させる
@@ -167,7 +199,6 @@ class SimpleSelect {
         else if (isEnter) {
             const idx = this._currentIdx;
             this.updateCurrentItem(idx);
-            this.dispatchSelectItemEvent(idx);
             this.hideDropdown();
         }
     }
@@ -190,7 +221,6 @@ class SimpleSelect {
             el.addEventListener("click", () => {
                 const idx = parseInt(el.dataset.itemIdx || "", 10);
                 this.updateCurrentItem(idx);
-                this.dispatchSelectItemEvent(idx);
             });
         });
     }

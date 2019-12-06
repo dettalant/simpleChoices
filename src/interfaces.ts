@@ -5,6 +5,7 @@ export interface SelectItem {
   label: string,
   // item id
   // id: number,
+  selected?: boolean,
 }
 
 export interface SelectElements {

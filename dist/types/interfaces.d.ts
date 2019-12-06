@@ -1,6 +1,7 @@
 export interface SelectItem {
     value: string;
     label: string;
+    selected?: boolean;
 }
 export interface SelectElements {
     container: HTMLElement;

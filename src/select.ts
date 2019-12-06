@@ -26,7 +26,16 @@ export default class SimpleSelectBuilder {
 
   create(label: string, items: SelectItem[], className?: string): SimpleSelect {
     const el = this.genSelectElements(label, items, className);
-    return new SimpleSelect(el, items);
+    const select = new SimpleSelect(el, items);
+
+    // set initial selected
+    const selectedIdx = items.findIndex(item => item.selected);
+    if (selectedIdx > 0) {
+      // selectedIdxが1以上ならば初期設定値を変更しておく
+      select.updateCurrentItem(selectedIdx, false);
+    };
+
+    return select;
   }
 
   private genSelectElements(label: string, items: SelectItem[], className: string = ""): SelectElements{
@@ -39,7 +48,7 @@ export default class SimpleSelectBuilder {
 
     const wrapperEl = createDiv(names.wrapper);
 
-    const currentEl = createSpan(names.current);
+    const currentEl = createDiv(names.current);
     currentEl.textContent = items[0].label;
 
     const itemWrapperEl = createDiv(names.itemWrapper);
@@ -48,19 +57,17 @@ export default class SimpleSelectBuilder {
     [btnEl, itemWrapperEl].forEach(el => setAriaExpanded(el, false));
 
     const itemEls = items.map((item, i) => {
-      const divClassName = names.item + " " + names.item + i;
-      const div = createDiv(divClassName);
+      const className = names.item + " " + names.item + i;
+      const el = createDiv(className);
 
-      div.textContent = item.label;
-      div.dataset.itemIdx = i.toString();
+      el.textContent = item.label;
+      el.dataset.itemIdx = i.toString();
 
-      // set aria selected
-      (i === 0)
-      ? setAriaSelected(div, true)
-      : setAriaSelected(div, false);
+      // 0番だけtrue、それ以外はfalseを指定
+      setAriaSelected(el, i === 0);
 
-      itemWrapperEl.appendChild(div);
-      return div;
+      itemWrapperEl.appendChild(el);
+      return el;
     });
 
     // append childs
@@ -89,7 +96,7 @@ class SimpleSelect {
   readonly el: SelectElements;
   readonly items: SelectItem[];
   private _currentIdx: number = 0;
-  isActive: boolean = false;
+  _isActive: boolean = false;
   /**
    * SimpleSelectのコンストラクタ
    *
@@ -102,13 +109,28 @@ class SimpleSelect {
 
     this.applyEventListeners();
   }
+  get isActive(): boolean {
+    return this._isActive;
+  }
 
-  private dispatchSelectItemEvent(itemIdx: number) {
-    const ev = new CustomEvent("SimpleSelectItemEvent", {
-      detail: this.items[itemIdx].value,
-    });
+  get currentIdx(): number {
+    return this._currentIdx;
+  }
 
-    this.el.container.dispatchEvent(ev);
+  set currentIdx(idx: number) {
+    this._currentIdx = idx;
+    this.updateCurrentItem(idx);
+  }
+
+  get currentItem(): SelectItem {
+    return this.items[this._currentIdx]
+  }
+
+  updateCurrentItem(itemIdx: number, isDispatchEvent: boolean = true) {
+    this.updateCurrentItemLabel(itemIdx);
+    this.updateHighlightItem(itemIdx);
+
+    if (isDispatchEvent) this.dispatchSelectItemEvent();
   }
 
   updateHighlightItem(itemIdx: number) {
@@ -125,26 +147,42 @@ class SimpleSelect {
     this._currentIdx = itemIdx;
   }
 
-  private updateCurrentItem(itemIdx: number) {
+  updateCurrentItemLabel(itemIdx: number) {
     const item = this.items[itemIdx];
     if (item) this.el.current.textContent = item.label;
   }
 
-  private showDropdown() {
+  showDropdown() {
     const {container, itemWrapper} = this.el;
     [container, itemWrapper].forEach(el => setAriaExpanded(el, true));
 
-    this.isActive = true;
+    this._isActive = true;
   }
 
-  private hideDropdown() {
+  /**
+   * ドロップダウンを閉じる
+   * hideDropdown後に行う処理を簡便にするため、promiseで包んで返す
+   *
+   * @return 非同期処理終了後のPromiseオブジェクト
+   */
+  hideDropdown(): Promise<void> {
     // onKeyDown時にうまく動かなかったので
     // requestAnimationFrameを挟んで実行タイミングをずらす
-    requestAnimationFrame(() => {
+    return new Promise(res => requestAnimationFrame(() => {
       const {container, itemWrapper} = this.el;
       [container, itemWrapper].forEach(el => setAriaExpanded(el, false));
-      this.isActive = false;
-    })
+      this._isActive = false;
+
+      res();
+    }));
+  }
+
+  private dispatchSelectItemEvent() {
+    const ev = new CustomEvent("SimpleSelectItemEvent", {
+      detail: this.items[this._currentIdx],
+    });
+
+    this.el.container.dispatchEvent(ev);
   }
 
   private onKeyDownHandler(e: KeyboardEvent) {
@@ -174,7 +212,6 @@ class SimpleSelect {
     } else if (isEnter) {
       const idx = this._currentIdx;
       this.updateCurrentItem(idx);
-      this.dispatchSelectItemEvent(idx);
       this.hideDropdown();
     }
   }
@@ -203,8 +240,7 @@ class SimpleSelect {
       el.addEventListener("click", () => {
         const idx = parseInt(el.dataset.itemIdx || "", 10);
 
-        this.updateCurrentItem(idx);
-        this.dispatchSelectItemEvent(idx);
+        this.updateCurrentItem(idx)
       })
     });
   }

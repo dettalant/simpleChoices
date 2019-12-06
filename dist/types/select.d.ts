@@ -10,7 +10,7 @@ declare class SimpleSelect {
     readonly el: SelectElements;
     readonly items: SelectItem[];
     private _currentIdx;
-    isActive: boolean;
+    _isActive: boolean;
     /**
      * SimpleSelectのコンストラクタ
      *
@@ -18,11 +18,22 @@ declare class SimpleSelect {
      * @param items 生成されたselect要素が内包する要素データ
      */
     constructor(el: SelectElements, items: SelectItem[]);
-    private dispatchSelectItemEvent;
+    get isActive(): boolean;
+    get currentIdx(): number;
+    set currentIdx(idx: number);
+    get currentItem(): SelectItem;
+    updateCurrentItem(itemIdx: number, isDispatchEvent?: boolean): void;
     updateHighlightItem(itemIdx: number): void;
-    private updateCurrentItem;
-    private showDropdown;
-    private hideDropdown;
+    updateCurrentItemLabel(itemIdx: number): void;
+    showDropdown(): void;
+    /**
+     * ドロップダウンを閉じる
+     * hideDropdown後に行う処理を簡便にするため、promiseで包んで返す
+     *
+     * @return 非同期処理終了後のPromiseオブジェクト
+     */
+    hideDropdown(): Promise<void>;
+    private dispatchSelectItemEvent;
     private onKeyDownHandler;
     private applyEventListeners;
 }
