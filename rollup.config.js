@@ -1,8 +1,10 @@
 import typescript from "rollup-plugin-typescript2";
 import pkg from "./package.json";
 
+// dealing with scoped package name
+const pkgName = pkg.name.split("/").pop();
 const bannerComment = `/*!
- *   ${pkg.name}.js
+ *   ${pkgName}.js
  *
  * @author dettalant
  * @version v${pkg.version}
@@ -23,7 +25,7 @@ const cjsOutput = {
   dir: dirName,
   entryFileNames: buildName.join(""),
   format: "cjs",
-  name: pkg.name,
+  name: pkgName,
   banner: bannerComment,
   sourceMap: "inline",
 }
