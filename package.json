@@ -1,5 +1,5 @@
 {
-  "name": "@dettalant/simpleChoices",
+  "name": "@dettalant/simple_choices",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",

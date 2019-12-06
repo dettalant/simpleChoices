@@ -1,5 +1,5 @@
 /*!
- *   simpleChoices.js
+ *   simple_choices.js
  *
  * @author dettalant
  * @version v0.1.0
