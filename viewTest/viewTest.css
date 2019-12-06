@@ -1,0 +1,54 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#appRoot {
+  width: 30%;
+}
+
+.simpleSelect_container {
+  --padding-size: .5rem;
+  --font-size: 18px;
+  font-size: var(--font-size);
+  max-height: calc(var(--font-size) + var(--padding-size) * 2);
+  background: transparent;
+  text-align: left;
+  display: flex;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  justify-content: space-between;
+}
+.simpleSelect_label {
+  padding: var(--padding-size);
+}
+.simpleSelect_wrapper {
+  display: flex;
+  flex-flow: column nowrap;
+  max-height: inherit;
+  position: relative;
+  min-width: 5rem;
+  text-align: center;
+}
+
+.simpleSelect_currentItem {
+  padding: var(--padding-size);
+  background: red;
+}
+
+.simpleSelect_itemWrapper {
+  visibility: hidden;
+  background: #fafafa;
+  z-index: 10;
+}
+
+.simpleSelect_itemWrapper[aria-expanded="true"] {
+  visibility: visible;
+}
+.simpleSelect_item[aria-selected="true"] {
+  background: royalblue;
+}
+.simpleSelect_item {
+  padding: var(--padding-size);
+}

@@ -1,9 +1,7 @@
 .rpt2_cache
 node_modules/*
 
-# for view test
-viewTest
-rollup.viewTest.config.js
+viewTest/index*
 
 yarn.lock
 yarn-error.log
