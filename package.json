@@ -5,6 +5,9 @@
   "types": "dist/types/index.d.ts",
   "author": "dettalant <lilac@dettalant.com> (https://dettalant.com/)",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/jest": "^24.0.23",
     "http-server": "^0.12.0",
