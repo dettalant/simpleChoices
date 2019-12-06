@@ -7,7 +7,7 @@ import {
   setAriaSelected
 } from "./utils";
 
-export default class SimpleSelectBuilder {
+export class SimpleSelectBuilder {
   private readonly classNames: SelectClassNames;
   constructor(classNames: Partial<SelectClassNames> = {}) {
     this.classNames = Object.assign(this.defaultSelectClassNames, classNames);
@@ -92,7 +92,7 @@ export default class SimpleSelectBuilder {
   }
 }
 
-class SimpleSelect {
+export class SimpleSelect {
   readonly el: SelectElements;
   readonly items: SelectItem[];
   private _currentIdx: number = 0;

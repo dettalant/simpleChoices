@@ -1,6 +1,6 @@
 export interface SelectItem {
   // select value for inner process
-  value: string,
+  value: any,
   // select label for UI
   label: string,
   // item id
@@ -9,12 +9,12 @@ export interface SelectItem {
 }
 
 export interface SelectElements {
-  container: HTMLElement,
-  label: HTMLElement,
-  wrapper: HTMLElement,
-  current: HTMLElement,
-  itemWrapper: HTMLElement,
-  items: HTMLElement[]
+  container: HTMLButtonElement,
+  label: HTMLSpanElement,
+  wrapper: HTMLDivElement,
+  current: HTMLDivElement,
+  itemWrapper: HTMLDivElement,
+  items: HTMLDivElement[]
 }
 
 export interface SelectClassNames {

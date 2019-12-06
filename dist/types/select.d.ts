@@ -1,12 +1,12 @@
 import { SelectItem, SelectClassNames, SelectElements } from "./interfaces";
-export default class SimpleSelectBuilder {
+export declare class SimpleSelectBuilder {
     private readonly classNames;
     constructor(classNames?: Partial<SelectClassNames>);
     get defaultSelectClassNames(): SelectClassNames;
     create(label: string, items: SelectItem[], className?: string): SimpleSelect;
     private genSelectElements;
 }
-declare class SimpleSelect {
+export declare class SimpleSelect {
     readonly el: SelectElements;
     readonly items: SelectItem[];
     private _currentIdx;
@@ -37,4 +37,3 @@ declare class SimpleSelect {
     private onKeyDownHandler;
     private applyEventListeners;
 }
-export {};

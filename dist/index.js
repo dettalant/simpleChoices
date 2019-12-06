@@ -2,7 +2,7 @@
  *   simple_choices.js
  *
  * @author dettalant
- * @version v0.1.2
+ * @version v0.1.5
  * @license MIT License
  */
 'use strict';
@@ -226,4 +226,5 @@ class SimpleSelect {
     }
 }
 
+exports.SimpleSelect = SimpleSelect;
 exports.SimpleSelectBuilder = SimpleSelectBuilder;

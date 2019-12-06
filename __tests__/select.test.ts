@@ -1,4 +1,4 @@
-import SimpleSelectBuilder from "#/select";
+import {SimpleSelectBuilder} from "#/select";
 import { SelectClassNames, SelectItem } from "#/interfaces";
 
 const builder = new SimpleSelectBuilder();
