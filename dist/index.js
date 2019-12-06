@@ -2,7 +2,7 @@
  *   simple_choices.js
  *
  * @author dettalant
- * @version v0.1.1
+ * @version v0.1.2
  * @license MIT License
  */
 'use strict';

@@ -1,11 +1,11 @@
-import { SelectItem, SelectClassNames, SelectElements } from "#/interfaces";
+import { SelectItem, SelectClassNames, SelectElements } from "./interfaces";
 import {
   createDiv,
   createSpan,
   createButton,
   setAriaExpanded,
   setAriaSelected
-} from "#/utils";
+} from "./utils";
 
 export default class SimpleSelectBuilder {
   private readonly classNames: SelectClassNames;

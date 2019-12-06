@@ -1,4 +1,4 @@
-import { SelectItem, SelectClassNames, SelectElements } from "#/interfaces";
+import { SelectItem, SelectClassNames, SelectElements } from "./interfaces";
 export default class SimpleSelectBuilder {
     private readonly classNames;
     constructor(classNames?: Partial<SelectClassNames>);
