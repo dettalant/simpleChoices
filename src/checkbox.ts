@@ -38,7 +38,7 @@ export class SimpleCheckboxBuilder {
     const checkbox = new SimpleCheckbox(el);
 
     if (initialValue) checkbox.setChecked(initialValue, false);
-    
+
     return checkbox;
   }
 
@@ -54,8 +54,8 @@ export class SimpleCheckboxBuilder {
 
     const iconWrapperEl = createDiv(names.iconWrapper);
     [
-      this.icons.outer,
-      this.icons.inner
+      this.icons.outer.cloneNode(true),
+      this.icons.inner.cloneNode(true)
     ].forEach(el => iconWrapperEl.appendChild(el));
 
     [labelEl, iconWrapperEl].forEach(el => containerEl.appendChild(el));

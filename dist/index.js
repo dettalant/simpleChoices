@@ -2,7 +2,7 @@
  *   simple_choices.js
  *
  * @author dettalant
- * @version v0.2.0
+ * @version v0.2.1
  * @license MIT License
  */
 'use strict';
@@ -313,8 +313,8 @@ class SimpleCheckboxBuilder {
         labelEl.textContent = label;
         const iconWrapperEl = createDiv(names.iconWrapper);
         [
-            this.icons.outer,
-            this.icons.inner
+            this.icons.outer.cloneNode(true),
+            this.icons.inner.cloneNode(true)
         ].forEach(el => iconWrapperEl.appendChild(el));
         [labelEl, iconWrapperEl].forEach(el => containerEl.appendChild(el));
         return {
