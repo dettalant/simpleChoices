@@ -2,6 +2,8 @@ import {SimpleSelectBuilder} from "#/select";
 import { SelectClassNames, SelectItem } from "#/interfaces";
 
 const builder = new SimpleSelectBuilder();
+const ariaSelected = "aria-selected";
+const ariaExpanded = "aria-expanded";
 const items = [
   {label: "label0", value: "value0"},
   {label: "label1", value: "value1"},
@@ -19,7 +21,7 @@ describe("SimpleSelectBuilder class test", () => {
     })
   })
 
-  it("custom container name test", () => {
+  it("custom container classname test", () => {
     const testClass = "test_class";
     const select = builder.create("", items, testClass);
     expect(select.el.container.className).toContain(testClass);
@@ -100,7 +102,6 @@ describe("SimpleSelect class test", () => {
 
   it("updateHighlightItem test", () => {
     const select = builder.create("", items);
-    const ariaSelected = "aria-selected";
     select.el.items.forEach((el, i) => {
       const boolStr = (i === 0) ? "true" : "false"
       expect(el.getAttribute(ariaSelected)).toBe(boolStr);
@@ -115,14 +116,14 @@ describe("SimpleSelect class test", () => {
     });
   });
 
-  it("dispatchSelectItemEvent test", done => {
+  it("dispatchSelectEvent test", done => {
     const select = builder.create("", items);
     let compIdx = 0;
-    select.el.container.addEventListener("SimpleSelectItemEvent", ((e: CustomEvent<SelectItem>) => {
+    select.el.container.addEventListener("SimpleSelectEvent", ((e: CustomEvent<SelectItem>) => {
       expect(e.detail).toEqual(items[compIdx]);
       done();
     }) as EventListener);
-    select["dispatchSelectItemEvent"]();
+    select["dispatchSelectEvent"]();
 
     items.forEach((_, i) => {
       compIdx = i;
@@ -132,7 +133,6 @@ describe("SimpleSelect class test", () => {
 
   it("showDropdown and hideDropdown test", done => {
     const select = builder.create("", items);
-    const ariaExpanded = "aria-expanded";
     // デフォルトでは非表示状態
     const {container, itemWrapper} = select.el;
     [container, itemWrapper].forEach(el => expect(el.getAttribute(ariaExpanded)).toBe("false"));
@@ -156,7 +156,6 @@ describe("SimpleSelect class test", () => {
     document.body.appendChild(select.el.container);
 
     expect(select.isActive).toBeFalsy();
-    const ariaExpanded = "aria-expanded";
     select.el.container.click();
     expect(select.isActive).toBeTruthy();
     expect(select.el.container.getAttribute(ariaExpanded)).toBe("true");

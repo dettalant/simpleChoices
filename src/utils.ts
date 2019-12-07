@@ -21,4 +21,22 @@ export const setAriaSelected = (el: HTMLElement, bool: boolean) => el.setAttribu
 
 export const setAriaExpanded = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-expanded", bool.toString());
 
+export const setAriaChecked = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-checked", bool.toString());
+
 // export const setAriaHidden = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-hidden", bool.toString());
+
+export const createSVG = (pathDs: string[], viewBox: string = "0 0 24 24") => {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("xmlns", ns);
+  svg.setAttribute("viewBox", viewBox);
+
+  pathDs.forEach(d => {
+    const path = document.createElementNS(ns, "path");
+    path.setAttribute("d", d);
+    svg.appendChild(path);
+  })
+
+  return svg;
+}

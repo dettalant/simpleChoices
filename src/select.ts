@@ -41,7 +41,10 @@ export class SimpleSelectBuilder {
   private genSelectElements(label: string, items: SelectItem[], className: string = ""): SelectElements{
     const names = this.classNames;
 
-    const btnEl = createButton(names.container + " " + className);
+    const containerEl = createButton(names.container + " " + className);
+    containerEl.setAttribute("role", "tree");
+    containerEl.setAttribute("aria-haspopup", "tree");
+    containerEl.title = label;
 
     const labelEl = createSpan(names.label);
     labelEl.textContent = label;
@@ -51,9 +54,10 @@ export class SimpleSelectBuilder {
     const currentEl = createDiv(names.current);
 
     const itemWrapperEl = createDiv(names.itemWrapper);
+    itemWrapperEl.setAttribute("role", "group");
 
     // set aria expanded;
-    [btnEl, itemWrapperEl].forEach(el => setAriaExpanded(el, false));
+    [containerEl, itemWrapperEl].forEach(el => setAriaExpanded(el, false));
 
     const itemEls = items.map((item, i) => {
       const className = names.item + " " + names.item + i;
@@ -61,6 +65,7 @@ export class SimpleSelectBuilder {
 
       el.textContent = item.label;
       el.dataset.itemIdx = i.toString();
+      el.setAttribute("role", "treeitem");
 
       itemWrapperEl.appendChild(el);
       return el;
@@ -75,10 +80,10 @@ export class SimpleSelectBuilder {
     [
       labelEl,
       wrapperEl
-    ].forEach(el => btnEl.appendChild(el));
+    ].forEach(el => containerEl.appendChild(el));
 
     return {
-      container: btnEl,
+      container: containerEl,
       label: labelEl,
       current: currentEl,
       wrapper: wrapperEl,
@@ -92,7 +97,7 @@ export class SimpleSelect {
   readonly el: SelectElements;
   readonly items: SelectItem[];
   private _currentIdx: number = 0;
-  _isActive: boolean = false;
+  private _isActive: boolean = false;
   /**
    * SimpleSelectのコンストラクタ
    *
@@ -139,7 +144,7 @@ export class SimpleSelect {
     this.updateCurrentItemLabel(itemIdx);
     this.updateHighlightItem(itemIdx);
 
-    if (isDispatchEvent) this.dispatchSelectItemEvent();
+    if (isDispatchEvent) this.dispatchSelectEvent();
   }
 
   /**
@@ -199,10 +204,10 @@ export class SimpleSelect {
 
   /**
    * container elementのカスタムイベントを発火させる
-   * "SimpleSelectItemEvent"がカスタムイベント名
+   * "SimpleSelectEvent"がカスタムイベント名
    */
-  private dispatchSelectItemEvent() {
-    const ev = new CustomEvent("SimpleSelectItemEvent", {
+  private dispatchSelectEvent() {
+    const ev = new CustomEvent("SimpleSelectEvent", {
       detail: this.items[this._currentIdx],
     });
 
@@ -222,6 +227,7 @@ export class SimpleSelect {
     const isArrowDown = e.key === "ArrowDown" || e.keyCode === 40;
     const isArrowUp = e.key === "ArrowUp" || e.keyCode === 38;
     const isEnter = e.key === "Enter" || e.keyCode === 13;
+    const isSpace = e.key === "Space" || e.keyCode === 32;
 
     if (isArrowUp) {
       const idx = (this._currentIdx > 0)
@@ -233,7 +239,7 @@ export class SimpleSelect {
         ? ++this._currentIdx
         : this._currentIdx;
       this.updateHighlightItem(idx);
-    } else if (isEnter) {
+    } else if (isEnter || isSpace) {
       const idx = this._currentIdx;
       this.updateCurrentItem(idx);
       this.hideDropdown();

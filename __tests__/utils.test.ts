@@ -1,4 +1,4 @@
-import { createDiv, createSpan, createButton, setAriaExpanded, setAriaSelected } from "#/utils";
+import { createDiv, createSpan, createButton, setAriaExpanded, setAriaSelected, setAriaChecked } from "#/utils";
 describe("utils function test", () => {
   const testClass = "test_class";
   it("createDiv test", () => {
@@ -42,6 +42,18 @@ describe("utils function test", () => {
 
     setAriaSelected(el, true);
     expect(el.getAttribute(ariaSelected)).toBe("true");
+  })
+
+  it("setAriaChecked test", () => {
+    const el = createDiv();
+    const ariaChecked = "aria-checked";
+    expect(el.getAttribute(ariaChecked)).toBe(null);
+
+    setAriaChecked(el, false);
+    expect(el.getAttribute(ariaChecked)).toBe("false");
+
+    setAriaChecked(el, true);
+    expect(el.getAttribute(ariaChecked)).toBe("true");
   })
 
 })
