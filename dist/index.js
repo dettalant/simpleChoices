@@ -2,7 +2,7 @@
  *   simple_choices.js
  *
  * @author dettalant
- * @version v0.1.6
+ * @version v0.2.0
  * @license MIT License
  */
 'use strict';
@@ -30,7 +30,21 @@ const createButton = (className) => {
 };
 const setAriaSelected = (el, bool) => el.setAttribute("aria-selected", bool.toString());
 const setAriaExpanded = (el, bool) => el.setAttribute("aria-expanded", bool.toString());
+const setAriaChecked = (el, bool) => el.setAttribute("aria-checked", bool.toString());
 // export const setAriaHidden = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-hidden", bool.toString());
+const createSVG = (pathDs, viewBox = "0 0 24 24") => {
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("xmlns", ns);
+    svg.setAttribute("viewBox", viewBox);
+    pathDs.forEach(d => {
+        const path = document.createElementNS(ns, "path");
+        path.setAttribute("d", d);
+        svg.appendChild(path);
+    });
+    return svg;
+};
 
 class SimpleSelectBuilder {
     constructor(classNames = {}) {
@@ -59,19 +73,24 @@ class SimpleSelectBuilder {
     }
     genSelectElements(label, items, className = "") {
         const names = this.classNames;
-        const btnEl = createButton(names.container + " " + className);
+        const containerEl = createButton(names.container + " " + className);
+        containerEl.setAttribute("role", "tree");
+        containerEl.setAttribute("aria-haspopup", "tree");
+        containerEl.title = label;
         const labelEl = createSpan(names.label);
         labelEl.textContent = label;
         const wrapperEl = createDiv(names.wrapper);
         const currentEl = createDiv(names.current);
         const itemWrapperEl = createDiv(names.itemWrapper);
+        itemWrapperEl.setAttribute("role", "group");
         // set aria expanded;
-        [btnEl, itemWrapperEl].forEach(el => setAriaExpanded(el, false));
+        [containerEl, itemWrapperEl].forEach(el => setAriaExpanded(el, false));
         const itemEls = items.map((item, i) => {
             const className = names.item + " " + names.item + i;
             const el = createDiv(className);
             el.textContent = item.label;
             el.dataset.itemIdx = i.toString();
+            el.setAttribute("role", "treeitem");
             itemWrapperEl.appendChild(el);
             return el;
         });
@@ -83,9 +102,9 @@ class SimpleSelectBuilder {
         [
             labelEl,
             wrapperEl
-        ].forEach(el => btnEl.appendChild(el));
+        ].forEach(el => containerEl.appendChild(el));
         return {
-            container: btnEl,
+            container: containerEl,
             label: labelEl,
             current: currentEl,
             wrapper: wrapperEl,
@@ -139,7 +158,7 @@ class SimpleSelect {
         this.updateCurrentItemLabel(itemIdx);
         this.updateHighlightItem(itemIdx);
         if (isDispatchEvent)
-            this.dispatchSelectItemEvent();
+            this.dispatchSelectEvent();
     }
     /**
      * 選択中要素のハイライトを切り替える
@@ -191,10 +210,10 @@ class SimpleSelect {
     }
     /**
      * container elementのカスタムイベントを発火させる
-     * "SimpleSelectItemEvent"がカスタムイベント名
+     * "SimpleSelectEvent"がカスタムイベント名
      */
-    dispatchSelectItemEvent() {
-        const ev = new CustomEvent("SimpleSelectItemEvent", {
+    dispatchSelectEvent() {
+        const ev = new CustomEvent("SimpleSelectEvent", {
             detail: this.items[this._currentIdx],
         });
         this.el.container.dispatchEvent(ev);
@@ -210,6 +229,7 @@ class SimpleSelect {
         const isArrowDown = e.key === "ArrowDown" || e.keyCode === 40;
         const isArrowUp = e.key === "ArrowUp" || e.keyCode === 38;
         const isEnter = e.key === "Enter" || e.keyCode === 13;
+        const isSpace = e.key === "Space" || e.keyCode === 32;
         if (isArrowUp) {
             const idx = (this._currentIdx > 0)
                 ? --this._currentIdx
@@ -222,7 +242,7 @@ class SimpleSelect {
                 : this._currentIdx;
             this.updateHighlightItem(idx);
         }
-        else if (isEnter) {
+        else if (isEnter || isSpace) {
             const idx = this._currentIdx;
             this.updateCurrentItem(idx);
             this.hideDropdown();
@@ -252,5 +272,100 @@ class SimpleSelect {
     }
 }
 
+class SimpleCheckboxBuilder {
+    constructor(classNames = {}, icons = {}) {
+        this.classNames = Object.assign(this.defaultCheckboxClassNames, classNames);
+        this.icons = Object.assign(this.defaultCheckboxIcons, icons);
+    }
+    get defaultCheckboxClassNames() {
+        return {
+            container: "simpleCheckbox_container",
+            label: "simpleCheckbox_label",
+            iconWrapper: "simpleCheckbox_iconWrapper",
+        };
+    }
+    get defaultCheckboxIcons() {
+        // material.io: check_box(modified)
+        const outerPathDs = ["M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"];
+        // material.io: check_box(modified)
+        const innerPathDs = ["M17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"];
+        const outer = createSVG(outerPathDs);
+        const inner = createSVG(innerPathDs);
+        return {
+            outer,
+            inner
+        };
+    }
+    create(label, initialValue = false, className) {
+        const el = this.genCheckboxElements(label, className);
+        const checkbox = new SimpleCheckbox(el);
+        if (initialValue)
+            checkbox.setChecked(initialValue, false);
+        return checkbox;
+    }
+    genCheckboxElements(label, className = "") {
+        const names = this.classNames;
+        const containerEl = createButton(names.container + " " + className);
+        containerEl.setAttribute("role", "switch");
+        setAriaChecked(containerEl, false);
+        containerEl.title = label;
+        const labelEl = createSpan(names.label);
+        labelEl.textContent = label;
+        const iconWrapperEl = createDiv(names.iconWrapper);
+        [
+            this.icons.outer,
+            this.icons.inner
+        ].forEach(el => iconWrapperEl.appendChild(el));
+        [labelEl, iconWrapperEl].forEach(el => containerEl.appendChild(el));
+        return {
+            container: containerEl,
+            label: labelEl,
+            iconWrapper: iconWrapperEl
+        };
+    }
+}
+class SimpleCheckbox {
+    constructor(el) {
+        this._isActive = false;
+        this.el = el;
+        this.applyEventListeners();
+    }
+    get isActive() {
+        return this._isActive;
+    }
+    set isActive(bool) {
+        this.setChecked(bool);
+    }
+    toggle() {
+        // reverse bool
+        const bool = !this._isActive;
+        this.setChecked(bool);
+    }
+    setChecked(bool, isDispatchEvent = true) {
+        this._isActive = bool;
+        // aria-checkedも同時に切り替える
+        this.updateAriaChecked(bool);
+        if (isDispatchEvent)
+            this.dispatchCheckboxEvent();
+    }
+    updateAriaChecked(bool) {
+        setAriaChecked(this.el.container, bool);
+    }
+    dispatchCheckboxEvent() {
+        const ev = new CustomEvent("SimpleCheckboxEvent", {
+            detail: this._isActive
+        });
+        this.el.container.dispatchEvent(ev);
+    }
+    applyEventListeners() {
+        this.el.container.addEventListener("click", e => {
+            this.toggle();
+            e.stopPropagation();
+        });
+    }
+}
+
+exports.SimpleCheckbox = SimpleCheckbox;
+exports.SimpleCheckboxBuilder = SimpleCheckboxBuilder;
 exports.SimpleSelect = SimpleSelect;
 exports.SimpleSelectBuilder = SimpleSelectBuilder;

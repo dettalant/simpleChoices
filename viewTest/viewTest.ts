@@ -1,4 +1,4 @@
-import { SimpleSelectBuilder } from "../src/index";
+import { SimpleSelectBuilder, SimpleCheckboxBuilder } from "../src/index";
 
 const appRoot = document.getElementById("appRoot");
 if (!appRoot) throw new Error("appRoot is not found");
@@ -17,10 +17,15 @@ const items2 = [
 
 const builder = new SimpleSelectBuilder();
 
-const select0 = builder.create("select0label", items, "select0Class");
-const select1 = builder.create("select1label", items2, "select1Class");
+const select0 = builder.create("select0_label", items, "select0_class");
+const select1 = builder.create("select1_label", items2, "select1_class");
 
+const checkboxBuilder = new SimpleCheckboxBuilder();
+const checkbox0 = checkboxBuilder.create("checkbox0_label", false, "checkbox0_class");
 [
   select0.el.container,
-  select1.el.container
+  select1.el.container,
+  checkbox0.el.container
 ].forEach((el: HTMLElement) => appRoot.appendChild(el))
+
+checkbox0.el.container.addEventListener("SimpleCheckboxEvent", e => console.log(e));

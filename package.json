@@ -1,6 +1,6 @@
 {
   "name": "@dettalant/simple_choices",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
   "author": "dettalant <lilac@dettalant.com> (https://dettalant.com/)",

@@ -10,7 +10,7 @@ export declare class SimpleSelect {
     readonly el: SelectElements;
     readonly items: SelectItem[];
     private _currentIdx;
-    _isActive: boolean;
+    private _isActive;
     /**
      * SimpleSelectのコンストラクタ
      *
@@ -57,9 +57,9 @@ export declare class SimpleSelect {
     hideDropdown(): Promise<void>;
     /**
      * container elementのカスタムイベントを発火させる
-     * "SimpleSelectItemEvent"がカスタムイベント名
+     * "SimpleSelectEvent"がカスタムイベント名
      */
-    private dispatchSelectItemEvent;
+    private dispatchSelectEvent;
     private onKeyDownHandler;
     private applyEventListeners;
 }

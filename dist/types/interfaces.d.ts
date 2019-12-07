@@ -19,3 +19,13 @@ export interface SelectClassNames {
     itemWrapper: string;
     item: string;
 }
+export interface CheckboxElements {
+    container: HTMLButtonElement;
+    label: HTMLSpanElement;
+    iconWrapper: HTMLDivElement;
+}
+export declare type CheckboxClassNames = Record<keyof CheckboxElements, string>;
+export interface CheckboxIcons {
+    outer: SVGElement;
+    inner: SVGElement;
+}
