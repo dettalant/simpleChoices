@@ -2,7 +2,7 @@
  *   simple_choices.js
  *
  * @author dettalant
- * @version v0.2.1
+ * @version v0.2.2
  * @license MIT License
  */
 'use strict';
@@ -28,10 +28,13 @@ const createButton = (className) => {
     btn.type = "button";
     return btn;
 };
-const setAriaSelected = (el, bool) => el.setAttribute("aria-selected", bool.toString());
-const setAriaExpanded = (el, bool) => el.setAttribute("aria-expanded", bool.toString());
-const setAriaChecked = (el, bool) => el.setAttribute("aria-checked", bool.toString());
-// export const setAriaHidden = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-hidden", bool.toString());
+const boolToString = (bool) => {
+    return (bool) ? "true" : "false";
+};
+const setAriaSelected = (el, bool) => el.setAttribute("aria-selected", boolToString(bool));
+const setAriaExpanded = (el, bool) => el.setAttribute("aria-expanded", boolToString(bool));
+const setAriaChecked = (el, bool) => el.setAttribute("aria-checked", boolToString(bool));
+// export const setAriaHidden = (el: HTMLElement, bool: boolean) => el.setAttribute("aria-hidden", boolToString(bool));
 const createSVG = (pathDs, viewBox = "0 0 24 24") => {
     const ns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(ns, "svg");
